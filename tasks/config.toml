@@ -1,0 +1,7 @@
+[informations]
+name = "Anthony"
+age = 16
+
+[informations.hobbies]
+foot = "Football"
+basket = "BasketBall"
