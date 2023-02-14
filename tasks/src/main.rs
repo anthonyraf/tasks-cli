@@ -1,13 +1,14 @@
 #![allow(unused)]
 
-mod core;
 mod parser;
+mod core;
+use crate::core::{ConfigFile, Task, TaskList};
 
-// #[macro_use]
-// extern crate serde_derive;
-// extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
 
-// use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize};
 
 /*
 fn main() {

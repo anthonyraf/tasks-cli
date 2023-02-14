@@ -1,53 +1,38 @@
+
 use std::fs::File;
 use std::io::prelude::*;
 use crate::parser;
 
-// Import serde derive
-
-
-// pub fn main() {
-//     let mut file = File::open("config.toml").expect("Unable to open file");
-//     let mut contents = String::new();
-//     file.read_to_string(&mut contents).expect("Could not read file");
-
-//     let mut config = contents.parse::<toml::Value>().unwrap();
-
-//     config["informations"]["age"] = toml::Value::Integer(20);
-//     println!("{:?}", config);
-//     println!("{:#?}", config["informations"]["age"].as_integer().unwrap());
-// }
-
 
 pub fn main() {
+
+    // println!("{:#?}", config);
+    let mut config: ConfigFile = ConfigFile::new(String::from("config.toml"));
+    let mut tasks = config.read()["tasks"].as_array_mut().unwrap();
     let mut tasklist: TaskList = TaskList::new();
 
-    for i in 0..10 {
-        let task = Task::new(i, format!("Task n°{}", i));
-        tasklist.add(task);
-    }
+    let task: Task = Task::new(255, String::from("Task 1"));
 
-    // println!("{:#?}", tasklist.tasks);
-    let mut config: toml::Value = ConfigFile::new(String::from("config.toml")).read();
-    //let mut table = config.as_table_mut().unwrap();
+    tasklist.add(task.to_toml());
+    tasklist.add(task.to_toml());
 
-    // let mut hobbies = table.get("informations").unwrap().clone().try_into::<toml::value::Table>().unwrap();
-    let mut hobbies = config["informations"]["hobbies"].as_table_mut().unwrap(); // modify directly the config
+    config.write(&tasklist.tasks);
 
-    hobbies.insert("swim".to_string(), toml::Value::String("Swimming".to_string()));
+    println!{"{:#?}", tasklist.tasks};
 
-    //config["informations"]["hobbies"] = toml::map::Map(hobbies);
-    println!("{:?}", config["informations"]["hobbies"]);
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
     id: u8,
     task: String,
+    priority: u8,
     date: String, // NOTE: Future implementation
 }
 
+#[derive(Debug)]
 pub struct TaskList {
-    tasks: Vec<Task>,
+    tasks: Vec<toml::Value>,
 }
 
 pub struct ConfigFile {
@@ -59,8 +44,14 @@ impl Task {
         Self {
             id,
             task,
+            priority: 1,
             date : String::from("NULL"),
         }
+    }
+
+    pub fn to_toml(&self) -> toml::Value {
+        let toml_string: String = toml::to_string(&self).unwrap();
+        toml_string.parse::<toml::Value>().unwrap()
     }
 }
 
@@ -71,11 +62,12 @@ impl TaskList {
         }
     }
 
-    pub fn add(&mut self, task: Task) {
+    pub fn add(&mut self, task: toml::Value) {
         self.tasks.push(task);
     }
 
-    pub fn write_to_file(&self){
+    pub fn save(&self){
+        /* Save in configuration file */
         todo!();
     }
 }
@@ -95,9 +87,13 @@ impl ConfigFile {
         content.parse::<toml::Value>().unwrap()
     }
 
-    pub fn write(&self, config: toml::Value) {
+    pub fn write(&self, config: &Vec<toml::Value>) {
         let mut file = File::create(&self.filename).expect("Unable to create file");
-        file.write_all(toml::to_string(&config).unwrap().as_bytes()).expect("Unable to write to file");
+        
+        let mut table = toml::Table::new();
+        table.insert(String::from("tasks"), toml::Value::Array(config.to_vec()));
+        file.write(toml::to_string_pretty(&table).unwrap().as_bytes()).expect("Unable to write file");
+
     }
 }
 

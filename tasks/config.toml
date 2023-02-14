@@ -1,7 +1,11 @@
-[informations]
-name = "Anthony"
-age = 16
+[[tasks]]
+date = "NULL"
+id = 255
+priority = 1
+task = "Task 1"
 
-[informations.hobbies]
-foot = "Football"
-basket = "BasketBall"
+[[tasks]]
+date = "NULL"
+id = 255
+priority = 1
+task = "Task 1"
