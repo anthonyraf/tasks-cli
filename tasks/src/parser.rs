@@ -19,7 +19,7 @@ pub enum Action {
 #[derive(Parser, Debug)]
 #[clap(about="Add a task to the list")]
 pub struct Add {
-    #[arg(short, long, help="Priority of the task (1-3)")]
+    #[arg(long, short , help="Priority of the task (1-3)")]
     pub priority: u8,
 
     #[arg(help="The task to add")]
@@ -52,7 +52,7 @@ pub struct Done {
     #[arg(help="The ID of task to mark as done")]
     pub id: u8,
 
-    #[arg(help="Save the task to the done list", default_value_t=true)]
+    #[clap(long, short, help="Save the task to the done list", default_value_t=true)]
     pub save: bool,
 }
 

@@ -1,26 +1,8 @@
-
 use std::fs::File;
 use std::io::prelude::*;
+use std::panic;
 use crate::parser;
 
-
-pub fn main() {
-
-    // println!("{:#?}", config);
-    let mut config: ConfigFile = ConfigFile::new(String::from("config.toml"));
-    let mut tasks = config.read()["tasks"].as_array_mut().unwrap();
-    let mut tasklist: TaskList = TaskList::new();
-
-    let task: Task = Task::new(255, String::from("Task 1"));
-
-    tasklist.add(task.to_toml());
-    tasklist.add(task.to_toml());
-
-    config.write(&tasklist.tasks);
-
-    println!{"{:#?}", tasklist.tasks};
-
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
@@ -32,7 +14,7 @@ pub struct Task {
 
 #[derive(Debug)]
 pub struct TaskList {
-    tasks: Vec<toml::Value>,
+    pub tasks: Vec<toml::Value>,
 }
 
 pub struct ConfigFile {
@@ -40,11 +22,11 @@ pub struct ConfigFile {
 }
 
 impl Task {
-    pub fn new(id: u8, task: String) -> Self {
+    pub fn new(id: u8, task: String, priority: u8) -> Self {
         Self {
             id,
             task,
-            priority: 1,
+            priority,
             date : String::from("NULL"),
         }
     }
@@ -66,9 +48,16 @@ impl TaskList {
         self.tasks.push(task);
     }
 
+    pub fn remove(&mut self, id: u32) {
+        todo!();
+    }
+
+    pub fn update_index(&mut self) {
+        todo!();
+    }
+
     pub fn save(&self){
         /* Save in configuration file */
-        todo!();
     }
 }
 
@@ -87,12 +76,23 @@ impl ConfigFile {
         content.parse::<toml::Value>().unwrap()
     }
 
-    pub fn write(&self, config: &Vec<toml::Value>) {
+    pub fn write(&mut self, config: &Vec<toml::Value>) {
+        let mut file_content = self.get("tasks");
         let mut file = File::create(&self.filename).expect("Unable to create file");
         
+
         let mut table = toml::Table::new();
-        table.insert(String::from("tasks"), toml::Value::Array(config.to_vec()));
+        
+        file_content.push(config[0].to_owned());
+        println!("{:?}", file_content);
+        table.insert(String::from("tasks"), toml::Value::Array(file_content));
         file.write(toml::to_string_pretty(&table).unwrap().as_bytes()).expect("Unable to write file");
+
+    }
+
+    pub fn get(&mut self, field_name: &str) -> Vec<toml::Value> {
+        let content = &mut self.read();
+        content[field_name].as_array_mut().unwrap().to_owned()
 
     }
 }
